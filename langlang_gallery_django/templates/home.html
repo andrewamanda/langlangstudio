@@ -1,0 +1,41 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<title>{{settings.site_title}}</title>
+</head>
+<body>
+<header><h1>{{settings.site_title}}</h1></header>
+<nav><ul>{% for s in sections %}<li><a href="#{{s.slug}}">{{s.nav_label}}</a></li>{% endfor %}</ul></nav>
+{% for s in sections %}
+<section id="{{s.slug}}">
+<h2>{{s.title}}</h2>
+<p>{{s.body|safe}}</p>
+{% if s.slug=="gallery" %}
+<div class="artwork-container">
+{% for img in s.images.all %}
+<img src="{{img.thumb.url|default:img.image.url}}" data-full="{{img.image.url}}" alt="{{img.title}}">
+{% endfor %}
+</div>
+{% endif %}
+</section>
+{% endfor %}
+<footer>{{settings.footer_text}}</footer>
+<div id="lightbox" class="lightbox"><img id="lightbox-img"></div>
+<script>
+document.addEventListener("click",e=>{
+ const img=e.target.closest("#gallery img");
+ if(!img)return;
+ const lb=document.getElementById("lightbox");
+ const lbimg=document.getElementById("lightbox-img");
+ lbimg.src=img.dataset.full;
+ lb.classList.add("open");
+});
+document.getElementById("lightbox").onclick=()=>{
+ document.getElementById("lightbox").classList.remove("open");
+};
+</script>
+</body>
+</html>

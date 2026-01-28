@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <title>{{ settings.site_title }}</title>
+</head>
+<body>
+  <header>
+    <h1>{{ settings.site_title }}</h1>
+  </header>
+
+  <nav>
+    <ul>
+      {% for s in sections %}
+        <li><a href="#{{ s.slug }}">{{ s.nav_label }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% for s in sections %}
+    <section id="{{ s.slug }}">
+      <h2>{{ s.title }}</h2>
+      {% if s.slug == "gallery" %}
+        <div class="artwork-container">
+          {% for img in s.images.all %}
+            {% if img.is_active %}
+              <img
+                src="{{ img.thumb.url|default:img.image.url }}"
+                data-full="{{ img.image.url }}"
+                alt="{{ img.title|default:'Artwork' }}">
+            {% endif %}
+          {% empty %}
+            <p>No images uploaded yet.</p>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>{{ s.body|safe }}</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+
+  <footer>
+    <p>{{ settings.footer_text }}</p>
+  </footer>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <img id="lightbox-img" class="lightbox-img" alt="">
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightbox-img");
+
+      // open (event delegation)
+      document.addEventListener("click", function (e) {
+        const img = e.target.closest("#gallery img");
+        if (!img) return;
+
+        lightboxImg.src = img.dataset.full || img.src;
+        lightboxImg.alt = img.alt || "Artwork";
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+      });
+
+      // close on click anywhere
+      lightbox.addEventListener("click", function () {
+        lightbox.classList.remove("open");
+        lightbox.setAttribute("aria-hidden", "true");
+        setTimeout(() => { lightboxImg.src = ""; }, 200);
+      });
+
+      // ESC closes
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && lightbox.classList.contains("open")) {
+          lightbox.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
